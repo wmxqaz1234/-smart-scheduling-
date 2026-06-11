@@ -1,8 +1,38 @@
 # 智能排班系统 v3.0
 
-> **推荐在 Coze、悟帆(WuFan)、WorkBuddy 等智能体平台上使用。** 本系统以 Agent 技能（Skill）的形式运行，天然适配智能体平台的自动化管道、Webhook 触发和工具调用能力。独立运行也可以，但需要自行处理调度和数据对接。
+> **推荐在 Coze、悟帆(WuFan)、WorkBuddy 等智能体平台上使用。** 本系统以 Agent 技能（Skill）的形式运行，天然适配智能体平台的自动化管道、Webhook 触发和工具调用能力。
 
 基于简道云 + AI 约束求解的自动化排班系统。
+
+## 快速开始
+
+### 第一步：安装简道云应用
+
+联系作者获取简道云排班应用模板，一键安装即可获得完整的 5 张业务表（员工信息表、班次模板表、排班规则表、排班结果表、请假申请表）。
+
+### 第二步：初始化配置
+
+```bash
+# 安装依赖
+pip install -r requirements.txt
+
+# 生成 config.json（自动识别表结构和字段映射）
+python scripts/init_config.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY
+
+# （可选）验证配置是否正确
+python scripts/validate_config.py --config config.json
+```
+
+### 第三步：部署到智能体平台
+
+将整个 `scripts/` 目录和 `config.json` 上传到你的悟帆 Agent 技能目录，然后创建两条自动化管道：
+
+| 管道 | 触发方式 | 说明 |
+|------|----------|------|
+| 每周智能排班 | cron `0 16 * * 5` | 每周五 16:00 自动生成下周排班表 |
+| 请假候选名单 | webhook | 员工提交请假后实时推荐候选替班人 |
+
+管道的任务设计详见 `pipelines/` 目录。
 
 ## 功能
 
@@ -11,41 +41,30 @@
 - **约束求解**：支持连续工作天数、每周最大天数、最小休息间隔、技能匹配等约束
 - **公平性优化**：贪心填充 + 公平性修正，确保工作量均匀分配
 
-## 快速开始
-
-```bash
-# 安装依赖
-pip install -r requirements.txt
-
-# 初始化配置（自动生成 config.json）
-python scripts/install.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY
-
-# 运行冒烟测试验证
-python tests/test_smoke.py
-```
-
 ## 文件结构
 
 ```
-├── SKILL.md                        # 技能定义
-├── INSTALL.md                      # 安装指南
-├── requirements.txt                # Python 依赖
-├── config.json                     # 运行时配置（安装后生成）
+├── README.md                         # 本文件
+├── SKILL.md                          # 技能定义（Agent 加载用）
+├── INSTALL.md                        # 详细安装指南
+├── requirements.txt                  # Python 依赖
+├── config.json                       # 运行时配置（init_config.py 生成）
 ├── scripts/
-│   ├── scheduler.py                # 核心排班算法
-│   ├── jdy_client.py               # 简道云 API 客户端
-│   ├── tz_util.py                  # 时区工具模块
-│   ├── leave_candidates.py         # 请假候选推荐
-│   ├── run_weekly_schedule.py      # 每周排班流程脚本
-│   ├── init_config.py              # 配置初始化
-│   ├── install.py                  # 一键安装
-│   └── create_pipelines.py         # 管道创建
+│   ├── scheduler.py                  # 核心排班算法
+│   ├── jdy_client.py                 # 简道云 API 客户端
+│   ├── tz_util.py                    # 时区工具模块
+│   ├── leave_candidates.py           # 请假候选推荐
+│   ├── run_weekly_schedule.py        # 每周排班流程脚本
+│   ├── init_config.py                # 配置初始化
+│   ├── validate_config.py            # 配置验证（建表后检查）
+│   ├── install.py                    # 一键安装
+│   └── create_pipelines.py           # 管道创建
 ├── pipelines/
-│   ├── pipelines-meta.json         # 管道元配置
-│   ├── weekly-schedule-task.md     # 排班管道任务设计
-│   └── leave-candidates-task.md    # 请假管道任务设计
+│   ├── pipelines-meta.json           # 管道元配置
+│   ├── weekly-schedule-task.md       # 排班管道任务设计
+│   └── leave-candidates-task.md      # 请假管道任务设计
 └── tests/
-    └── test_smoke.py               # 冒烟测试（4 个用例）
+    └── test_smoke.py                 # 冒烟测试（4 个用例）
 ```
 
 ## 核心算法
