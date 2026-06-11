@@ -1,0 +1,42 @@
+{
+  "pipelines": [
+    {
+      "name": "weekly-smart-schedule",
+      "display_name": "每周智能排班",
+      "description": "每周五 16:00 自动生成下周排班表，写入简道云排班结果表",
+      "trigger_config": {
+        "type": "cron",
+        "cron_expr": "0 16 * * 5",
+        "timezone": "Asia/Shanghai"
+      },
+      "task_design_file": "pipelines/weekly-schedule-task.md",
+      "variables_schema": {
+        "week_offset": {
+          "type": "number",
+          "default": 1,
+          "label": "排班周偏移量",
+          "description": "0=本周，1=下周"
+        }
+      },
+      "execution_config": {
+        "max_iterations": 15,
+        "timeout_minutes": 10
+      }
+    },
+    {
+      "name": "leave-candidates-query",
+      "display_name": "请假候选名单查询",
+      "description": "请假表提交后自动查询候选替班员工并写回子表单",
+      "trigger_config": {
+        "type": "webhook",
+        "timezone": "Asia/Shanghai"
+      },
+      "task_design_file": "pipelines/leave-candidates-task.md",
+      "variables_schema": {},
+      "execution_config": {
+        "max_iterations": 10,
+        "timeout_minutes": 5
+      }
+    }
+  ]
+}
