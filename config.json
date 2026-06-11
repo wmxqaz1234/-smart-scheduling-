@@ -1,0 +1,73 @@
+{
+  "_comment": "智能排班系统配置 - 自动生成",
+  "app_id": "6a27a51042f13fb09f36ce8d",
+  "api_key": "YOUR_API_KEY",
+  "tables": {
+    "employee": {
+      "entry_id": "69fdd43d02477dfe387c9578",
+      "fields": {
+        "name": "_widget_1778242620642",
+        "employee_id": "_widget_1778242620643",
+        "department": "_widget_1778242620645",
+        "position": "_widget_1778242620646",
+        "skill_level": "_widget_1778242620647",
+        "max_weekly_days": "_widget_1778242620649",
+        "status": "_widget_1778242620650"
+      }
+    },
+    "shift_template": {
+      "entry_id": "69fdd46e076f72d24f9f4925",
+      "fields": {
+        "name": "_widget_1778242669159",
+        "start_time": "_widget_1778242669160",
+        "end_time": "_widget_1778242669161",
+        "duration_hours": "_widget_1778242669162",
+        "required_count": "_widget_1778242669163",
+        "shift_type": "_widget_1778242669164",
+        "required_skill": "_widget_1778242669166"
+      }
+    },
+    "schedule_rule": {
+      "entry_id": "69fdd4f945e29ce147f70da0",
+      "fields": {
+        "name": "_widget_1778242808356",
+        "rule_type": "_widget_1778242808357",
+        "param_value": "_widget_1778242808359",
+        "priority": "_widget_1778242808360",
+        "enabled": "_widget_1778242808361"
+      }
+    },
+    "schedule": {
+      "entry_id": "69fdd5a382eedf6f29b64404",
+      "fields": {
+        "period": "_widget_1778242978279",
+        "employee": "_widget_1778242978287",
+        "date": "_widget_1778242978281",
+        "shift": "_widget_1778243327685",
+        "status": "_widget_1778242978284",
+        "employee_id": "_widget_1778243277340",
+        "remark": "_widget_1778242978286"
+      }
+    },
+    "leave": {
+      "entry_id": "69fdd741409afa926a6c89da",
+      "fields": {
+        "employee_id": "gonghao",
+        "applicant": "shenqingren",
+        "leave_type": "_widget_1778243392520",
+        "start_date": "shijian",
+        "end_date": "_widget_1781010211070",
+        "reason": "_widget_1778243392524",
+        "approval_status": "_widget_1778243392525",
+        "candidates_subform": "_widget_1780994598181",
+        "sub_employee_id": "_widget_1780994598183",
+        "sub_name": "_widget_1780994598184"
+      }
+    }
+  },
+  "webhook_payload_fields": {
+    "employee_id": "gonghao",
+    "applicant": "shenqingren",
+    "leave_date": "shijian"
+  }
+}
