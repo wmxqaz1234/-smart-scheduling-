@@ -70,6 +70,29 @@ description: >
 
 ---
 
+## 工具依赖说明（重要）
+
+**执行排班脚本前必须确保 bash 工具已启用**。如果遇到"工具 'bash' 当前未启用"错误：
+
+```python
+# 先调用 use_capability 启用 bash
+use_capability(query="bash execute command", activate=True)
+
+# 然后再执行排班脚本
+bash(command="python3 skills/smart-scheduling/scripts/run_weekly_schedule.py --week-offset 1")
+```
+
+**为什么需要显式启用**：
+- bash 工具在某些会话中不是默认可用的
+- 使用 `use_capability` 可以临时激活 bash 工具
+- 激活后在同一会话中可持续使用
+
+**本技能需要的工具**：
+- `bash`: 用于执行 Python 排班脚本（run_weekly_schedule.py、scheduler.py 等）
+- `automation`: 用于创建和管理自动化管道（每周排班、请假候选查询）
+
+---
+
 ## 首次使用：配置初始化
 
 安装简道云排班应用后，**必须先运行初始化脚本**自动生成 config.json。脚本会自动遍历应用 → 表单 → 字段，识别所有 widget_id。
@@ -126,6 +149,23 @@ python skills/smart-scheduling/scripts/init_config.py \
 - API Key 直接存储在 config.json 中，无需依赖其他 skill
 - 如果表单名称或字段 label 与默认匹配规则不一致，脚本会报告未识别的项
 - `webhook_payload_fields` 用于自动化管道解析 Webhook payload，确保与实际字段 ID 一致
+
+### 工具依赖说明（重要）
+
+**执行排班脚本前必须确保 bash 工具已启用**。如果遇到"工具 'bash' 当前未启用"错误：
+
+```python
+# 先调用 use_capability 启用 bash
+use_capability(query="bash execute command", activate=True)
+
+# 然后再执行排班脚本
+bash(command="python3 skills/smart-scheduling/scripts/run_weekly_schedule.py --week-offset 1")
+```
+
+**为什么需要显式启用**：
+- bash 工具在某些会话中不是默认可用的
+- 使用 `use_capability` 可以临时激活 bash 工具
+- 激活后在同一会话中可持续使用
 
 ### 创建自动化管道
 
@@ -327,6 +367,55 @@ Step 6: 写入排班规则表（规则类型 = min_adjustment_swap）
   ]
 }
 ```
+
+---
+
+## 故障排查指南
+
+### 问题：执行排班脚本时报错"工具 'bash' 当前未启用"
+
+**原因**：bash 工具在当前会话中未激活。
+
+**解决方案**：
+1. 先调用 `use_capability(query="bash", activate=True)` 启用 bash 工具
+2. 然后重新执行排班脚本
+
+**预防措施**：
+- 在执行任何 bash 命令前，先确认工具已启用
+- 如果遇到间歇性失败（一会成功一会失败），通常是工具未启用导致
+
+### 问题：脚本执行超时（15秒左右卡住）
+
+**可能原因**：
+1. 简道云 API 网络延迟或连接失败
+2. Python 环境初始化问题
+3. execute_python 工具的持久化环境问题
+
+**排查步骤**：
+1. **优先使用 bash 而非 execute_python** 执行脚本
+   - execute_python 在某些环境下会超时
+   - bash 更稳定可靠
+2. 先用 `bash` 测试简单命令确认环境正常：
+   ```bash
+   echo "test" && python3 --version
+   ```
+3. 检查 config.json 中的 app_id 和 api_key 是否正确
+4. 尝试手动运行初始化脚本验证连接
+
+### 问题：排班结果为空或写入失败
+
+**检查清单**：
+1. 员工信息表中是否有状态="在职"的员工
+2. 班次模板表是否配置了所需人数 > 0 的班次
+3. 关联字段是否使用了正确的 data_id 格式（纯字符串，非数组）
+4. 日期字段是否使用了 UTC 格式（通过 `bj_date_to_utc_midnight()` 转换）
+
+### 最佳实践总结
+
+1. **始终使用 bash 执行脚本**，避免使用 execute_python（容易超时）
+2. **执行前先启用工具**：`use_capability(query="bash", activate=True)`
+3. **检查返回值**：脚本执行后检查返回码和输出，确认是否成功
+4. **查看完整输出**：使用 `head -100` 或重定向到文件查看完整日志
 
 ---
 

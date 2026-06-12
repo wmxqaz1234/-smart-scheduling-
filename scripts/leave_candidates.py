@@ -148,8 +148,9 @@ class LeaveCandidateQuery:
         
         转换逻辑: UTC 时间 → 北京时间日期 → UTC 零点格式
         """
-        bj_date = utc_to_bj_date(date_utc)
-        return bj_date_to_utc_midnight(bj_date)
+        try:
+            bj_date = utc_to_bj_date(date_utc)
+            return bj_date_to_utc_midnight(bj_date)
         except Exception:
             return date_utc
     
