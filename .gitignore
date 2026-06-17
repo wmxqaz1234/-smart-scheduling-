@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# 敏感配置（运行 install.py 后自动生成，请勿提交）
+config_local.json
+
+# 运行产出
+schedule_input_*.json
+schedule_output_*.json
+*.log
+
+# IDE
+.vscode/
+.idea/

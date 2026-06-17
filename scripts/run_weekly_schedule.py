@@ -198,7 +198,7 @@ def main():
     sch = cfg["tables"]["schedule"]
     
     data_list = []
-    for assignment in schedule_list:
+    for idx, assignment in enumerate(schedule_list):
         emp_id = assignment["employee_id"]
         shift_name = assignment["shift_name"]
         
@@ -220,6 +220,17 @@ def main():
         # 班次关联字段：{"value": "data_id"}
         if shift_data_id and "shift" in sch["fields"]:
             data[sch["fields"]["shift"]] = {"value": shift_data_id}
+        
+        # 班次文本字段（冗余字段，方便查询）
+        if "shift_name" in sch["fields"]:
+            data[sch["fields"]["shift_name"]] = {"value": shift_name}
+        
+        # 调试：打印第一条数据的完整结构
+        if idx == 0:
+            print(f"\n[调试] 第一条排班数据样例:")
+            print(f"  员工ID: {emp_id} -> data_id: {emp_data_id}")
+            print(f"  班次名称: {shift_name} -> data_id: {shift_data_id}")
+            print(f"  完整数据: {json.dumps(data, ensure_ascii=False)}")
         
         data_list.append(data)
     

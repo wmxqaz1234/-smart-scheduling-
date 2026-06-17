@@ -344,7 +344,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例：
-  python init_config.py --app-id 6a27a51042f13fb09f36ce8d --api-key YOUR_API_KEY
+  python init_config.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY
         """
     )
     

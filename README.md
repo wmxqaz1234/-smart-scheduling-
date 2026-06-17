@@ -1,85 +1,103 @@
-# 智能排班系统 v3.0
+# 智能排班系统 (Smart Scheduling)
 
-> **推荐在 Coze、悟帆(WuFan)、WorkBuddy 等智能体平台上使用。** 本系统以 Agent 技能（Skill）的形式运行，天然适配智能体平台的自动化管道、Webhook 触发和工具调用能力。
+基于简道云的智能排班系统，支持自动周排班、请假候选替班员工查询、排班规则校验等功能。
 
-基于简道云 + AI 约束求解的自动化排班系统。
+## 功能特性
+
+- **每周自动排班** — 根据班次需求、员工技能等级、排班规则自动生成最优排班表
+- **请假候选查询** — 员工请假时自动查询可用替班候选人，写入请假表子表单（已有数据时自动跳过）
+- **排班规则校验** — 支持每周最大工作天数、连续工作天数上限等规则约束
+- **技能等级匹配** — 班次可设置最低技能要求，系统自动过滤不满足的员工
 
 ## 快速开始
 
-### 第一步：安装简道云应用
+### 前置条件
 
-联系作者获取简道云排班应用模板，一键安装即可获得完整的 5 张业务表（员工信息表、班次模板表、排班规则表、排班结果表、请假申请表）。
+1. 一个简道云账号，并创建好以下 5 张表单：
+   - **员工信息表** — 姓名、工号、技能等级、在职状态等
+   - **班次模板表** — 班次名称、时间段、所需人数、技能要求
+   - **排班规则表** — 规则类型、参数值、启用状态
+   - **排班结果表** — 周期、员工、日期、班次、状态
+   - **请假申请表** — 工号、申请人、请假类型、日期、候选名单（子表单）
 
-### 第二步：告诉智能体你的应用信息
+2. 获取简道云 API Key（在简道云后台 → 设置 → API Key 中生成）
 
-在对话中提供以下信息，智能体会自动完成配置初始化、验证和管道创建：
+### 安装步骤
 
-> 我的简道云排班应用 app_id 是 xxx，api_key 是 xxx，帮我初始化排班系统，项目链接是 https://github.com/wmxqaz1234/-smart-scheduling- 。
+```bash
+# 1. 安装 Python 依赖
+pip install httpx
 
-智能体会自动执行：安装依赖 → 生成配置 → 验证表结构 → 创建自动化管道。完成后即可直接使用。
+# 2. 一键安装（自动扫描简道云表单，生成 config.json）
+python scripts/install.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY
 
-### 第三步：开始使用
+# 3. 验证安装
+python tests/test_smoke.py
+```
 
-配置完成后，系统自动运行：
+安装脚本会自动完成：
+- 连接简道云应用，遍历所有表单和字段
+- 通过字段名称自动识别业务表和字段映射
+- 生成 `config.json` 配置文件（包含所有 widget_id 映射）
 
-- **每周五 16:00** 自动生成下周排班表
-- **员工提交请假时** 实时推荐候选替班人
+> 如果一键安装失败，可使用 `python scripts/init_config.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY` 手动初始化。
 
-也可以随时对话操作："帮我生成下周一的排班表"、"张三请假了，推荐一下替班人"。
+### 配置说明
 
-## 功能
+安装后 `config.json` 会自动填入你的简道云表单 ID 和字段映射。如需修改，直接编辑此文件。
 
-- **自动排班生成**：每周五自动读取员工、班次、规则数据，运行约束求解算法生成排班表
-- **请假候选推荐**：员工提交请假后实时触发，自动筛选候选替班人
-- **约束求解**：支持连续工作天数、每周最大天数、最小休息间隔、技能匹配等约束
-- **公平性优化**：贪心填充 + 公平性修正，确保工作量均匀分配
+关键配置项：
 
-## 文件结构
+| 配置项 | 说明 |
+|-------|------|
+| `app_id` | 简道云应用 ID |
+| `api_key` | 简道云 API Key |
+| `tables.*.entry_id` | 各表单的简道云表单 ID |
+| `tables.*.fields` | 字段名到 widget_id 的映射 |
+| `webhook_payload_fields` | Webhook 推送数据的字段映射 |
+
+## 项目结构
 
 ```
-├── README.md                         # 本文件
-├── SKILL.md                          # 技能定义（Agent 加载用）
-├── INSTALL.md                        # 详细安装指南
-├── requirements.txt                  # Python 依赖
-├── config.json                       # 运行时配置（init_config.py 生成）
+smart-scheduling/
+├── README.md                     ← 本文件
+├── INSTALL.md                    ← 详细安装指南
+├── SKILL.md                      ← 系统架构与算法文档
+├── requirements.txt              ← Python 依赖
+├── config.json                   ← 配置文件（install.py 自动生成）
+├── .gitignore
 ├── scripts/
-│   ├── scheduler.py                  # 核心排班算法
-│   ├── jdy_client.py                 # 简道云 API 客户端
-│   ├── tz_util.py                    # 时区工具模块
-│   ├── leave_candidates.py           # 请假候选推荐
-│   ├── run_weekly_schedule.py        # 每周排班流程脚本
-│   ├── init_config.py                # 配置初始化
-│   ├── validate_config.py            # 配置验证（建表后检查）
-│   ├── install.py                    # 一键安装
-│   └── create_pipelines.py           # 管道创建
+│   ├── scheduler.py              ← 排班算法引擎
+│   ├── jdy_client.py             ← 简道云 API 客户端
+│   ├── leave_candidates.py       ← 请假候选员工查询
+│   ├── run_weekly_schedule.py    ← 每周排班执行脚本
+│   ├── init_config.py            ← 配置自动提取
+│   ├── install.py                ← 一键安装脚本
+│   ├── create_pipelines.py       ← 管道创建辅助
+│   ├── validate_config.py        ← 配置验证脚本
+│   └── tz_util.py                ← 时区转换工具
 ├── pipelines/
-│   ├── pipelines-meta.json           # 管道元配置
-│   ├── weekly-schedule-task.md       # 排班管道任务设计
-│   └── leave-candidates-task.md      # 请假管道任务设计
+│   ├── pipelines-meta.json       ← 自动化管道元配置
+│   ├── weekly-schedule-task.md   ← 每周排班任务设计
+│   └── leave-candidates-task.md  ← 请假候选任务设计
 └── tests/
-    └── test_smoke.py                 # 冒烟测试（4 个用例）
+    └── test_smoke.py             ← 冒烟测试
 ```
 
-## 核心算法
+## 自动化管道
 
-scheduler.py 采用贪心 + 公平性修正的约束求解策略：
+系统支持两个自动化任务：
 
-1. 计算每个（日期, 班次）的稀缺度
-2. 按稀缺度降序逐个填充
-3. 每个空位选择最优员工（技能 60% + 公平性 40%）
-4. 全部填充后做公平性交换修正
+| 管道 | 触发方式 | 功能 |
+|------|---------|------|
+| 每周智能排班 | Cron（每周五 16:00） | 自动生成下周排班表 |
+| 请假候选名单查询 | Webhook | 请假提交时自动查询替班候选人 |
 
-支持两种模式：`generate`（全量排班）和 `adjust`（最小幅度调整）。
+## 技术栈
 
-## 数据模型
-
-依赖简道云 5 张业务表：员工信息表、班次模板表、排班规则表、排班结果表、请假申请表。
-
-详见 [SKILL.md](./SKILL.md) 和 [INSTALL.md](./INSTALL.md)。
-
-## 时区规范
-
-所有时间处理统一使用 `scripts/tz_util.py` 模块。简道云 datetime 字段存储为 UTC，北京时间 = UTC + 8 小时。
+- Python 3.8+
+- httpx（简道云 API 调用）
+- 简道云 API v5
 
 ## License
 
